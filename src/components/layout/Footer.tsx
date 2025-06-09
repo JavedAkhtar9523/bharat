@@ -574,7 +574,7 @@ const Footer: React.FC = () => {
                 </button>
               </div>
             </form>
-            <div>
+            {/* <div>
               <h4 className="text-lg font-semibold mb-4 text-gray-300">{t('connectWithUs')}</h4>
               <div className="grid grid-cols-3 gap-3">
                 {socialLinks.map((social, index) => (
@@ -588,7 +588,29 @@ const Footer: React.FC = () => {
                   </a>
                 ))}
               </div>
-            </div>
+            </div> */}
+
+            <div className="grid grid-cols-6 gap-3">
+    {socialLinks.map((social, index) => (
+      <a
+        key={index}
+        href={social.href}
+        title={social.name}
+        className={`
+          group relative w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center 
+          text-gray-400 ${social.color} transition-all duration-300 hover:bg-gray-700
+          hover:shadow-lg transform hover:-translate-y-1
+        `}
+      >
+        <social.icon className="w-5 h-5 transition-transform group-hover:scale-110" />
+        <span className="absolute -bottom-7 left-1/2 transform -translate-x-1/2 
+          text-xs text-white bg-gray-900 px-2 py-1 rounded opacity-0 
+          group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+          {social.name}
+        </span>
+      </a>
+    ))}
+  </div>
           </div>
         </div>
 

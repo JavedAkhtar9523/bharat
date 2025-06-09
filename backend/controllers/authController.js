@@ -1,14 +1,157 @@
+// const bcrypt = require("bcryptjs");
+// const jwt = require("jsonwebtoken");
+// const User = require("../models/User");
+
+// exports.register = async (req, res) => {
+//   const { username, password, role } = req.body;
+//   try {
+//     const hashedPassword = await bcrypt.hash(password, 10);
+//     const user = new User({ username, password: hashedPassword, role });
+//     await user.save();
+//     res.status(201).json({ message: "User registered" });
+//   } catch (err) {
+//     res
+//       .status(400)
+//       .json({ message: "Error registering user", error: err.message });
+//   }
+// };
+
+// exports.login = async (req, res) => {
+//   const { username, password } = req.body;
+//   try {
+//     const user = await User.findOne({ username });
+//     if (!user) return res.status(400).json({ message: "User not found" });
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch)
+//       return res.status(400).json({ message: "Invalid credentials" });
+
+//     const token = jwt.sign(
+//       { id: user._id, role: user.role },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1h" }
+//     );
+//     res.json({ token });
+//   } catch (err) {
+//     res.status(400).json({ message: "Error logging in", error: err.message });
+//   }
+// };
+
+// jjjjjjjjjjjjjjjjjjjjjjjjjjj666666666666666666666666
+
+// const bcrypt = require("bcryptjs");
+// const jwt = require("jsonwebtoken");
+// const User = require("../models/User");
+
+// exports.register = async (req, res) => {
+//   const { username, password, mobile } = req.body;
+//   try {
+//     const hashedPassword = await bcrypt.hash(password, 10);
+//     const user = new User({
+//       username,
+//       password: hashedPassword,
+//       mobile,
+//       role: "user",
+//     });
+//     await user.save();
+//     res.status(201).json({ message: "User registered successfully" });
+//   } catch (err) {
+//     res
+//       .status(400)
+//       .json({ message: "Error registering user", error: err.message });
+//   }
+// };
+
+// exports.login = async (req, res) => {
+//   const { username, password } = req.body;
+//   try {
+//     const user = await User.findOne({ username });
+//     if (!user) return res.status(400).json({ message: "User not found" });
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch)
+//       return res.status(400).json({ message: "Invalid credentials" });
+
+//     const token = jwt.sign(
+//       { id: user._id, role: user.role },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1h" }
+//     );
+//     res.json({ token, role: user.role });
+//   } catch (err) {
+//     res.status(400).json({ message: "Error logging in", error: err.message });
+//   }
+// };
+
+// exports.promoteToAdmin = async (req, res) => {
+//   const { userId } = req.body;
+//   try {
+//     // Check if the requester is an admin
+//     if (req.user.role !== "admin") {
+//       return res.status(403).json({ message: "Only admins can promote users" });
+//     }
+
+//     const user = await User.findById(userId);
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     user.role = "admin";
+//     await user.save();
+//     res.json({ message: "User promoted to admin" });
+//   } catch (err) {
+//     res
+//       .status(400)
+//       .json({ message: "Error promoting user", error: err.message });
+//   }
+// };
+
+// exports.getUsers = async (req, res) => {
+//   try {
+//     if (req.user.role !== "admin") {
+//       return res.status(403).json({ message: "Only admins can view users" });
+//     }
+//     const users = await User.find().select("username mobile role");
+//     res.json(users);
+//   } catch (err) {
+//     res
+//       .status(400)
+//       .json({ message: "Error fetching users", error: err.message });
+//   }
+// };
+
+// ================-------------==============
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 exports.register = async (req, res) => {
-  const { username, password, role } = req.body;
+  const { username, password, mobile } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, password: hashedPassword, role });
+    const user = new User({
+      username,
+      password: hashedPassword,
+      mobile,
+      role: "user",
+    });
     await user.save();
-    res.status(201).json({ message: "User registered" });
+
+    // Generate token for immediate login after registration
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        mobile: user.mobile,
+        role: user.role,
+      },
+    });
   } catch (err) {
     res
       .status(400)
@@ -31,9 +174,96 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.json({ token });
+
+    res.json({
+      token,
+      role: user.role,
+      user: {
+        _id: user._id,
+        username: user.username,
+        mobile: user.mobile,
+        role: user.role,
+      },
+    });
   } catch (err) {
     res.status(400).json({ message: "Error logging in", error: err.message });
+  }
+};
+
+exports.promoteToAdmin = async (req, res) => {
+  const { userId } = req.body;
+  try {
+    // Check if the requester is an admin
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Only admins can promote users" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.role = "admin";
+    await user.save();
+    res.json({ message: "User promoted to admin" });
+  } catch (err) {
+    res
+      .status(400)
+      .json({ message: "Error promoting user", error: err.message });
+  }
+};
+
+exports.demoteToUser = async (req, res) => {
+  const { userId } = req.body;
+  try {
+    // Check if the requester is an admin
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Only admins can demote users" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Prevent self-demotion
+    if (user._id.toString() === req.user.id) {
+      return res.status(400).json({ message: "You cannot demote yourself" });
+    }
+
+    // Check if user is already a regular user
+    if (user.role === "user") {
+      return res
+        .status(400)
+        .json({ message: "User is already a regular user" });
+    }
+
+    user.role = "user";
+    await user.save();
+
+    res.json({
+      message: "User demoted to regular user",
+      user: {
+        _id: user._id,
+        username: user.username,
+        mobile: user.mobile,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    res
+      .status(400)
+      .json({ message: "Error demoting user", error: err.message });
+  }
+};
+
+exports.getUsers = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Only admins can view users" });
+    }
+    const users = await User.find().select("username mobile role");
+    res.json(users);
+  } catch (err) {
+    res
+      .status(400)
+      .json({ message: "Error fetching users", error: err.message });
   }
 };
 

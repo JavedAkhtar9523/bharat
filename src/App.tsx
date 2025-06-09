@@ -42,6 +42,7 @@ import LiveTVPage from './pages/LiveTVPage';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const App: React.FC = () => {
   return (
@@ -53,7 +54,10 @@ const App: React.FC = () => {
             <Route path="/category/:categoryId" element={<Layout><CategoryPage /></Layout>} />
             <Route path="/article/:articleId" element={<Layout><ArticlePage /></Layout>} />
             <Route path="/live" element={<Layout><LiveTVPage /></Layout>} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+            </Route>
+            {/* <Route path="/dashboard" element={<Dashboard />} /> */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
           </Routes>
